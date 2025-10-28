@@ -3,18 +3,9 @@ from database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-    
-
-
-
 # ==========================
-# 🧍 Tabela de Usuários
+# 👤 Tabela de Usuários
 # ==========================
-from datetime import datetime
-from database import db
-from werkzeug.security import generate_password_hash, check_password_hash
-
-
 class Usuario(db.Model):
     __tablename__ = "usuario"
 
@@ -29,17 +20,16 @@ class Usuario(db.Model):
     entradas = db.relationship("EntradaEstoque", backref="usuario", lazy=True)
 
     # --- 🔒 Funções de segurança ---
-    def set_senha(self, senha):
+    def set_senha(self, senha: str):
         """Gera o hash seguro da senha antes de salvar."""
         self.senha_hash = generate_password_hash(senha)
 
-    def verificar_senha(self, senha):
+    def verificar_senha(self, senha: str) -> bool:
         """Compara a senha digitada com o hash salvo."""
         return check_password_hash(self.senha_hash, senha)
 
     def __repr__(self):
         return f"<Usuario {self.nome}>"
-
 
 
 # ==========================
@@ -50,7 +40,7 @@ class Produto(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(255), nullable=False)
-    tipo = db.Column(db.Enum('insumo', 'produto_final'))
+    tipo = db.Column(db.Enum('insumo', 'produto_final'), nullable=False)
     preco_unit = db.Column(db.Numeric(14, 2), nullable=False)
     unidade_medida = db.Column(db.String(50))
 
@@ -72,7 +62,8 @@ class Pedido(db.Model):
     cliente_contato = db.Column(db.String(255))
     status = db.Column(
         db.Enum('criado', 'aprovado', 'em_producao', 'em_logistica', 'entregue', 'finalizado'),
-        default='criado'
+        default='criado',
+        nullable=False
     )
     total = db.Column(db.Numeric(14, 2), nullable=False, default=0.00)
     criado_por = db.Column(db.Integer, db.ForeignKey("usuario.id"))
@@ -134,3 +125,57 @@ class EntradaEstoque(db.Model):
 
     def __repr__(self):
         return f"<EntradaEstoque Produto:{self.produto_id} Quantidade:{self.quantidade}>"
+
+
+# ==========================
+# 🛠 Funções auxiliares de estoque
+# ==========================
+def registrar_entrada(produto_id: int, quantidade: float, usuario_id: int, motivo: str = "Entrada manual") -> float:
+    """Registra entrada de produto e atualiza estoque."""
+    estoque = Estoque.query.filter_by(produto_id=produto_id).first()
+
+    if not estoque:
+        estoque = Estoque(produto_id=produto_id, quantidade_atual=0)
+        db.session.add(estoque)
+        db.session.commit()  # gera ID do estoque
+
+    entrada = EntradaEstoque(
+        produto_id=produto_id,
+        estoque_id=estoque.id,
+        quantidade=quantidade,
+        criado_por=usuario_id,
+        data_entrada=datetime.utcnow()
+    )
+    db.session.add(entrada)
+
+    estoque.quantidade_atual += quantidade
+    estoque.ultima_atualizacao = datetime.utcnow()
+
+    db.session.commit()
+    return float(estoque.quantidade_atual)
+
+
+def registrar_saida(item_pedido_id: int, usuario_id: int) -> float:
+    """Deduz do estoque os itens de um pedido."""
+    item = ItemPedido.query.get(item_pedido_id)
+    if not item:
+        raise ValueError("Item do pedido não encontrado.")
+
+    estoque = Estoque.query.filter_by(produto_id=item.produto_id).first()
+    if not estoque or estoque.quantidade_atual < item.quantidade:
+        raise ValueError("Estoque insuficiente.")
+
+    entrada = EntradaEstoque(
+        produto_id=item.produto_id,
+        estoque_id=estoque.id,
+        quantidade=-item.quantidade,  # negativo para saída
+        criado_por=usuario_id,
+        data_entrada=datetime.utcnow()
+    )
+    db.session.add(entrada)
+
+    estoque.quantidade_atual -= item.quantidade
+    estoque.ultima_atualizacao = datetime.utcnow()
+
+    db.session.commit()
+    return float(estoque.quantidade_atual)

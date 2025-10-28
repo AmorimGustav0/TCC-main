@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import init_app, db
-from models import Usuario
+from models import Usuario, registrar_entrada, registrar_saida
 import os
+
 
 # Diretórios
 BASE_DIR = os.path.dirname(__file__)
@@ -96,6 +97,37 @@ def teste_db():
         return "✅ Conectado ao banco!"
     except Exception as e:
         return f"❌ Erro ao conectar: {e}"
+    
+@app.route("/estoque/entrada", methods=["POST"])
+def entrada_estoque():
+    data = request.get_json()
+    produto_id = data["produto_id"]
+    quantidade = data["quantidade"]
+    usuario_id = data["usuario_id"]
+
+    try:
+        total = registrar_entrada(produto_id, quantidade, usuario_id)
+        return {"status": "ok", "estoque_atual": float(total)}
+    except Exception as e:
+        return {"status": "erro", "mensagem": str(e)}, 400
+
+
+@app.route("/pedido/confirmar", methods=["POST"])
+def confirmar_pedido():
+    data = request.get_json()
+    item_id = data["item_pedido_id"]
+    usuario_id = data["usuario_id"]
+
+    try:
+        total = registrar_saida(item_id, usuario_id)
+        return {"status": "ok", "estoque_atual": float(total)}
+    except Exception as e:
+        return {"status": "erro", "mensagem": str(e)}, 400
+
+
+@app.route("/dashboard")
+def dashboard_page():
+    return render_template("dashboard.html")
 
 # -------------------
 # Rodar app
