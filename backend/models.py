@@ -39,18 +39,11 @@ class Produto(db.Model):
     __tablename__ = "produto"
 
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(255), nullable=False)
-    tipo = db.Column(db.Enum('insumo', 'produto_final'), nullable=False)
-    preco_unit = db.Column(db.Numeric(14, 2), nullable=False)
-    unidade_medida = db.Column(db.String(50))
-
-    itens_pedido = db.relationship("ItemPedido", backref="produto", lazy=True)
-    estoque = db.relationship("Estoque", uselist=False, backref="produto", lazy=True)
-
-    def __repr__(self):
-        return f"<Produto {self.nome}>"
-
-
+    nome = db.Column(db.String(100), nullable=False)
+    formato = db.Column(db.String(50))
+    preco = db.Column(db.Float, nullable=False)
+    estoque = db.Column(db.Integer, nullable=False, default=0)
+    
 # ==========================
 # 🧾 Tabela de Pedidos
 # ==========================

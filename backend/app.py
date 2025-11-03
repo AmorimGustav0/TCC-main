@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import init_app, db
-from models import Usuario, registrar_entrada, registrar_saida
+from models import Usuario, registrar_entrada, registrar_saida, Produto  # 👈 Import do modelo Produto
 import os
 
-
-# Diretórios
+# -------------------
+# Configuração de diretórios
+# -------------------
 BASE_DIR = os.path.dirname(__file__)
 TEMPLATE_DIR = os.path.join(BASE_DIR, "../frontend")
 
@@ -38,6 +39,10 @@ def estoque_page():
 @app.route("/faturamento")
 def faturamento_page():
     return render_template("faturamento.html")
+
+@app.route("/dashboard")
+def dashboard_page():
+    return render_template("dashboard.html")
 
 # -------------------
 # Rotas de login e registro
@@ -97,7 +102,10 @@ def teste_db():
         return "✅ Conectado ao banco!"
     except Exception as e:
         return f"❌ Erro ao conectar: {e}"
-    
+
+# -------------------
+# Rotas de estoque
+# -------------------
 @app.route("/estoque/entrada", methods=["POST"])
 def entrada_estoque():
     data = request.get_json()
@@ -111,7 +119,6 @@ def entrada_estoque():
     except Exception as e:
         return {"status": "erro", "mensagem": str(e)}, 400
 
-
 @app.route("/pedido/confirmar", methods=["POST"])
 def confirmar_pedido():
     data = request.get_json()
@@ -124,10 +131,54 @@ def confirmar_pedido():
     except Exception as e:
         return {"status": "erro", "mensagem": str(e)}, 400
 
+# -------------------
+# Rotas de produtos (NOVAS)
+# -------------------
 
-@app.route("/dashboard")
-def dashboard_page():
-    return render_template("dashboard.html")
+# 👉 Cadastrar produto
+@app.route("/produtos/salvar", methods=["POST"])
+def salvar_produto():
+    data = request.get_json()
+
+    nome = data.get("nome")
+    formato = data.get("formato")
+    preco = data.get("preco")
+    estoque = data.get("estoque")
+
+    if not nome or preco is None or estoque is None:
+        return jsonify(status="erro", mensagem="Preencha todos os campos"), 400
+
+    try:
+        novo_produto = Produto(
+            nome=nome,
+            formato=formato,
+            preco=preco,
+            estoque=estoque
+        )
+        db.session.add(novo_produto)
+        db.session.commit()
+        return jsonify(status="ok", mensagem="Produto salvo com sucesso!")
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(status="erro", mensagem=str(e)), 500
+
+# 👉 Listar produtos
+@app.route("/produtos/listar", methods=["GET"])
+def listar_produtos():
+    try:
+        produtos = Produto.query.all()
+        lista = [
+            {
+                "id": p.id,
+                "nome": p.nome,
+                "formato": p.formato,
+                "preco": p.preco,
+                "estoque": p.estoque
+            } for p in produtos
+        ]
+        return jsonify(lista)
+    except Exception as e:
+        return jsonify(status="erro", mensagem=str(e)), 500
 
 # -------------------
 # Rodar app

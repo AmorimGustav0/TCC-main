@@ -37,6 +37,12 @@
 
 <script>
   let produtos = JSON.parse(localStorage.getItem('produtos') || '[]');
+  fetch("/produtos/listar")
+  .then(res => res.json())
+  .then(data => {
+    produtos = data;
+    updateProdutosTable();
+  });
 
 function updateProdutosTable() {
   const tbody = document.querySelector('#produtos-table tbody');
@@ -70,7 +76,7 @@ function excluirProduto(index) {
   updateProdutosTable();
 }
 
-document.getElementById('produto-form').addEventListener('submit', e => {
+document.getElementById('produto-form').addEventListener('submit', async e => {
   e.preventDefault();
   const nome = document.getElementById('produto-nome').value;
   const formato = document.getElementById('produto-formato').value;
@@ -82,9 +88,26 @@ document.getElementById('produto-form').addEventListener('submit', e => {
     return;
   }
 
-  produtos.push({nome, formato, preco, estoque});
-  updateProdutosTable();
-  e.target.reset();
+  try {
+    const resposta = await fetch("/produtos/salvar", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({nome, formato, preco, estoque})
+    });
+
+    const resultado = await resposta.json();
+
+    if (resultado.status === "ok") {
+      alert("✅ Produto cadastrado com sucesso!");
+      produtos.push({nome, formato, preco, estoque});
+      updateProdutosTable();
+      e.target.reset();
+    } else {
+      alert("Erro: " + resultado.mensagem);
+    }
+  } catch (erro) {
+    alert("Erro ao conectar com o servidor: " + erro);
+  }
 });
 
 updateProdutosTable();
