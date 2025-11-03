@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>Faturamento - Mev Glass OS</title>
- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 <body>
 <header>
-  <h1>Faturamento</h1>
+ <h1 id="tit"><a href="{{ url_for('inicio_page') }}">prodmanager</a></h1>
   <nav>
-<a href="{{ url_for('produtos_page') }}">Produtos</a>
-<a href="{{ url_for('clientes_page') }}">Clientes</a>
-<a href="{{ url_for('estoque_page') }}">Estoque</a>
-<a href="{{ url_for('faturamento_page') }}">Faturamento</a>
+    <a href="{{ url_for('produtos_page') }}">Produtos</a>
+    <a href="{{ url_for('clientes_page') }}">Cadastrar Cliente</a>
+    <a href="{{ url_for('estoque_page') }}">Estoque</a>
+    <a href="{{ url_for('faturamento_page') }}">Faturamento</a>
   </nav>
 </header>
-
 <main>
   <section>
     <h2>Registrar Venda</h2>

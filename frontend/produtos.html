@@ -3,16 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>Produtos - Mev Glass OS</title>
- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <header>
-  <h1>Produtos</h1>
+   <a href="{{ url_for('inicio_page') }}">sim</a>
   <nav>
     <a href="{{ url_for('produtos_page') }}">Produtos</a>
     <a href="{{ url_for('clientes_page') }}">Clientes</a>
+    <a href="{{ url_for('listar_clientes') }}">Lista Clientes</a>
     <a href="{{ url_for('estoque_page') }}">Estoque</a>
     <a href="{{ url_for('faturamento_page') }}">Faturamento</a>
+    
   </nav>
 </header>
 
@@ -26,92 +28,46 @@
       <input type="number" id="produto-estoque" placeholder="Quantidade em Estoque (mín 5)" min="5" required>
       <button type="submit">Cadastrar Produto</button>
     </form>
-
-    <h3>Lista de Produtos</h3>
-    <table id="produtos-table">
-      <thead><tr><th>Nome</th><th>Formato</th><th>Preço</th><th>Estoque</th><th>Ação</th></tr></thead>
-      <tbody></tbody>
-    </table>
   </section>
 </main>
 
 <script>
+  // Recupera lista atual de produtos ou cria uma nova
   let produtos = JSON.parse(localStorage.getItem('produtos') || '[]');
-  fetch("/produtos/listar")
-  .then(res => res.json())
-  .then(data => {
-    produtos = data;
-    updateProdutosTable();
-  });
 
-function updateProdutosTable() {
-  const tbody = document.querySelector('#produtos-table tbody');
-  tbody.innerHTML = '';
-  produtos.forEach((p, index) => {
-    tbody.innerHTML += `<tr>
-      <td>${p.nome}</td>
-      <td>${p.formato}</td>
-      <td>$${p.preco.toFixed(2)}</td>
-      <td>${p.estoque}</td>
-      <td><button onclick="excluirProduto(${index})">Excluir</button></td>
-    </tr>`;
-  });
-  localStorage.setItem('produtos', JSON.stringify(produtos));
-}
-
-function excluirProduto(index) {
-  // Remove vendas relacionadas
-  let faturamentos = JSON.parse(localStorage.getItem('faturamentos') || '[]');
-  faturamentos = faturamentos.filter(f => f.produto !== index);
-
-  // Ajusta índices de produtos nas vendas restantes
-  faturamentos = faturamentos.map(f => {
-    if(f.produto > index) f.produto -= 1;
-    return f;
-  });
-
-  localStorage.setItem('faturamentos', JSON.stringify(faturamentos));
-
-  produtos.splice(index, 1);
-  updateProdutosTable();
-}
-
-document.getElementById('produto-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const nome = document.getElementById('produto-nome').value;
-  const formato = document.getElementById('produto-formato').value;
-  const preco = parseFloat(document.getElementById('produto-preco').value);
-  const estoque = parseInt(document.getElementById('produto-estoque').value);
-
-  if (estoque < 5) {
-    alert("A quantidade mínima em estoque é 5.");
-    return;
+  // Atualiza o localStorage
+  function salvarProdutos() {
+    localStorage.setItem('produtos', JSON.stringify(produtos));
   }
 
-  try {
-    const resposta = await fetch("/produtos/salvar", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({nome, formato, preco, estoque})
-    });
+  // Função de cadastro
+  document.getElementById('produto-form').addEventListener('submit', e => {
+    e.preventDefault();
+    
+    const nome = document.getElementById('produto-nome').value.trim();
+    const formato = document.getElementById('produto-formato').value.trim();
+    const preco = parseFloat(document.getElementById('produto-preco').value);
+    const estoque = parseInt(document.getElementById('produto-estoque').value);
 
-    const resultado = await resposta.json();
-
-    if (resultado.status === "ok") {
-      alert("✅ Produto cadastrado com sucesso!");
-      produtos.push({nome, formato, preco, estoque});
-      updateProdutosTable();
-      e.target.reset();
-    } else {
-      alert("Erro: " + resultado.mensagem);
+    if (!nome || !formato || isNaN(preco) || isNaN(estoque)) {
+      alert("Preencha todos os campos corretamente.");
+      return;
     }
-  } catch (erro) {
-    alert("Erro ao conectar com o servidor: " + erro);
-  }
-});
 
-updateProdutosTable();
+    if (estoque < 5) {
+      alert("A quantidade mínima em estoque é 5.");
+      return;
+    }
 
+    produtos.push({ nome, formato, preco, estoque });
+    salvarProdutos();
+
+    // Mostra alerta de sucesso com estilo simples
+    alert(`✅ Produto "${nome}" cadastrado com sucesso!`);
+
+    // Limpa o formulário
+    e.target.reset();
+  });
 </script>
 </body>
 </html>

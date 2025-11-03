@@ -67,12 +67,12 @@ header nav a:hover::after {
     width: 100%;
 }
 
-/* CONTEÚDO PRINCIPAL */
+/* CONTEÚDO PRINCIPAL (Adaptado para o Dashboard) */
 main {
     flex: 1;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 25px; /* Espaçamento entre as seções do dashboard */
     padding: 40px 20px;
     width: 100%;
     animation: fadeIn 1s ease forwards;
@@ -83,8 +83,9 @@ section {
     border-radius: 16px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
     padding: 35px 45px;
-    width: 90%;
-    max-width: 950px;
+    width: 100%; /* Ocupa a largura do container main */
+    max-width: 950px; /* Mantém a largura máxima */
+    margin: 0 auto; /* Centraliza as seções */
     transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s;
 }
 
@@ -93,7 +94,7 @@ section:hover {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
-section h2, section h3 {
+section h2 {
     text-align: center;
     margin-bottom: 25px;
     color: #1E3C72;
@@ -101,98 +102,99 @@ section h2, section h3 {
     font-weight: 600;
 }
 
-/* FORMULÁRIOS */
-form {
+/* === NOVOS ESTILOS DO DASHBOARD VISUAL === */
+
+/* Hub de Ações com Ícones */
+.action-hub {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-}
-
-form input, form select {
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid #1E3C72;
-    font-size: 1em;
-    outline: none;
-    transition: all 0.3s ease;
-    width: 45%;
-    min-width: 200px;
-    background-color: #f9f9f9;
-}
-
-form input:focus, form select:focus {
-    border-color: #2A5298;
-    box-shadow: 0 0 8px rgba(42, 82, 152, 0.4);
-    background-color: #fff;
-}
-
-form button {
-    background: linear-gradient(135deg, #1E3C72, #2A5298);
-    color: #fff;
-    border: none;
-    padding: 14px 25px;
-    border-radius: 10px;
-    cursor: pointer;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1E3C72;
     font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    transition: transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-form button:hover {
+.action-card:hover {
     transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(30, 60, 114, 0.4);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    color: #2A5298;
 }
 
-/* TABELAS */
-table {
+.action-card svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 15px;
+    stroke: #1E3C72;
+    transition: stroke 0.3s ease;
+}
+
+.action-card:hover svg {
+    stroke: #2A5298;
+}
+
+/* Layout em duas colunas para Estoque e Atividades */
+.dashboard-columns {
+    display: grid;
+    grid-template-columns: 1fr; /* Coluna única por padrão */
+    gap: 25px;
+}
+
+@media (min-width: 900px) {
+    .dashboard-columns {
+        grid-template-columns: 1fr 1fr; /* Duas colunas em telas maiores */
+    }
+}
+
+/* Status do Estoque com Barras de Progresso */
+.stock-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+.stock-item-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+.progress-bar {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 25px;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
     overflow: hidden;
-    border-radius: 10px;
 }
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+}
+.progress-bar-fill.low { background: #e74c3c; }
+.progress-bar-fill.medium { background: #f39c12; }
+.progress-bar-fill.high { background: #2ecc71; }
 
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 12px 14px;
-    text-align: center;
-    font-size: 0.95em;
-    transition: background 0.4s, color 0.4s;
+/* Feed de Atividades Recentes */
+.activity-feed { list-style: none; padding: 0; }
+.feed-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
 }
-
-table th {
-    background: linear-gradient(135deg, #1E3C72, #2A5298);
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    text-transform: uppercase;
-}
-
-table tr:nth-child(even) {
-    background-color: #f4f7ff;
-}
-
-table tr:hover {
-    background-color: #e3eaff;
-    transition: 0.3s;
-}
-
-/* BOTÕES DE AÇÃO */
-button {
-    background: linear-gradient(135deg, #1E3C72, #2A5298);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(42, 82, 152, 0.4);
-}
+.feed-item:last-child { border-bottom: none; }
+.feed-item svg { width: 24px; height: 24px; margin-right: 15px; }
 
 /* ANIMAÇÕES */
 @keyframes fadeIn {
@@ -208,10 +210,6 @@ button:hover {
 
 /* RESPONSIVIDADE */
 @media (max-width: 768px) {
-    form input, form select {
-        width: 100%;
-    }
-
     section {
         padding: 25px 20px;
     }
@@ -221,7 +219,7 @@ button:hover {
     }
 }
 
-/* 🌙 MODO ESCURO AUTOMÁTICO */
+/* 🌙 MODO ESCURO AUTOMÁTICO (COMBINADO) */
 @media (prefers-color-scheme: dark) {
     body {
         background: linear-gradient(135deg, #0F2027, #203A43, #2C5364);
@@ -246,44 +244,19 @@ button:hover {
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
     }
 
-    section h2, section h3 {
+    section h2 {
         color: #9ecbff;
     }
-
-    form input, form select {
-        background-color: #2a2f3a;
-        border: 1px solid #6ea8fe;
-        color: #eee;
+    
+    /* Estilos do Dashboard para Modo Escuro */
+    .action-card {
+        background: rgba(25, 30, 40, 0.95);
+        color: #9ecbff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.6);
     }
-
-    form input:focus, form select:focus {
-        box-shadow: 0 0 8px rgba(110, 168, 254, 0.6);
-    }
-
-    table th {
-        background: linear-gradient(135deg, #0F2027, #203A43, #2C5364);
-    }
-
-    table td {
-        background-color: #1c2230;
-        color: #e0e0e0;
-    }
-
-    table tr:nth-child(even) {
-        background-color: #242b3a;
-    }
-
-    table tr:hover {
-        background-color: #2f3b4f;
-    }
-
-    button, form button {
-        background: linear-gradient(135deg, #304e75, #4063a3);
-        color: #fff;
-    }
-
-    button:hover, form button:hover {
-        box-shadow: 0 8px 20px rgba(110, 168, 254, 0.3);
-    }
+    .action-card svg { stroke: #9ecbff; }
+    .action-card:hover { color: #fff; }
+    .action-card:hover svg { stroke: #fff; }
+    .progress-bar { background-color: #444; }
+    .feed-item { border-bottom-color: #333; }
 }
-

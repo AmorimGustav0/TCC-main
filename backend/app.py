@@ -16,6 +16,16 @@ init_app(app)
 # -------------------
 # Rotas de páginas
 # -------------------
+
+@app.route("/inicio")
+def inicio_page():
+    return render_template("inicio.html")
+
+
+@app.route("/listar_clientes")
+def listar_clientes():
+    return render_template("lista_clientes.html")
+
 @app.route("/")
 def index():
     return render_template("login.html")
