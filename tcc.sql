@@ -529,6 +529,37 @@ INSERT INTO `variante` VALUES (1,2,100.00,150.00,'preto',0,0,'sem','ESP-100-150-
 UNLOCK TABLES;
 
 --
+-- Table structure for table `insumos`
+--
+
+DROP TABLE IF EXISTS `insumos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `insumos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `variante_id` int NOT NULL,
+  `material` varchar(255) NOT NULL,
+  `quantidade` decimal(10,3) NOT NULL,
+  `custo_unitario` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `unidade_medida` varchar(50) DEFAULT 'un',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_insumos_variante` (`variante_id`),
+  CONSTRAINT `fk_insumos_variante` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `insumos`
+--
+
+LOCK TABLES `insumos` WRITE;
+/*!40000 ALTER TABLE `insumos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `insumos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Temporary view structure for view `vw_catalogo`
 --
 

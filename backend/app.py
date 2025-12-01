@@ -3,8 +3,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import init_app, db
 from models import (
     Usuario, Produto, Variante, Estoque, MovimentoEstoque,
-    Pedido, ItemPedido,
-    registrar_entrada_variante, registrar_saida_variante
+    Pedido, ItemPedido, Insumo,
+    registrar_entrada_variante, registrar_saida_variante,
+    calcular_custo_producao, calcular_preco_venda
 )
 import os
 import re
@@ -67,6 +68,10 @@ def faturamento_page():
 @app.route("/dashboard")
 def dashboard_page():
     return render_template("dashboard.html")
+
+@app.route("/relatorios")
+def relatorios_page():
+    return render_template("relatorios.html")
 
 
 # -------------------
@@ -200,8 +205,7 @@ def criar_produto_com_variantes():
             largura = v.get("largura_cm")
             cor = v.get("cor")
             moldura = v.get("moldura")
-            preco_base = v.get("preco_base", 0)
-            estoque_inicial = int(v.get("estoque_inicial", 0))
+            insumos_data = v.get("insumos", [])
 
             sku_base = gerar_sku_from_fields(linha, altura, largura, cor, moldura)
             sku = sku_base
@@ -219,15 +223,36 @@ def criar_produto_com_variantes():
                 led_indireto=bool(v.get("led_indireto", False)),
                 moldura=moldura,
                 sku=sku,
-                preco_base=preco_base,
+                preco_base=0,  # Será calculado depois dos insumos
                 ativo=True
             )
             db.session.add(variante)
             db.session.flush()
 
+            # Adicionar insumos
+            for insumo_data in insumos_data:
+                insumo = Insumo(
+                    variante_id=variante.id,
+                    material=insumo_data.get("material"),
+                    quantidade=insumo_data.get("quantidade"),
+                    custo_unitario=insumo_data.get("custo_unitario", 0),
+                    unidade_medida=insumo_data.get("unidade_medida", "un")
+                )
+                db.session.add(insumo)
+            
+            db.session.flush()
+
+            # Calcular preço base automaticamente ou usar o fornecido
+            preco_fornecido = v.get("preco_base")
+            if preco_fornecido:
+                variante.preco_base = preco_fornecido
+            else:
+                # Calcular automaticamente baseado nos insumos
+                variante.preco_base = variante.preco_venda_sugerido
+
             estoque = Estoque(
                 variante_id=variante.id,
-                quantidade=estoque_inicial,
+                quantidade=int(v.get("estoque_inicial", 0)),
                 minimo=int(v.get("minimo", 0))
             )
             db.session.add(estoque)
@@ -235,8 +260,10 @@ def criar_produto_com_variantes():
             resposta_variantes.append({
                 "variante_id": variante.id,
                 "sku": sku,
-                "preco_base": str(preco_base),
-                "estoque_inicial": estoque_inicial
+                "custo_producao": float(variante.custo_producao),
+                "preco_venda_sugerido": float(variante.preco_venda_sugerido),
+                "preco_base": str(variante.preco_base),
+                "estoque_inicial": int(v.get("estoque_inicial", 0))
             })
 
         db.session.commit()
@@ -604,6 +631,277 @@ def limpar_todas_vendas():
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+# -------------------
+# Endpoints de Insumos
+# -------------------
+@app.route("/insumo/criar", methods=["POST"])
+def criar_insumo():
+    """
+    Cria um ou mais insumos para uma variante.
+    Payload: { "variante_id": 1, "insumos": [{"material": "...", "quantidade": 2.5, "custo_unitario": 50.00}] }
+    """
+    data = request.get_json()
+    variante_id = data.get("variante_id")
+    insumos_data = data.get("insumos", [])
+
+    if not variante_id:
+        return jsonify({"error": "variante_id required"}), 400
+    
+    variante = Variante.query.get(variante_id)
+    if not variante:
+        return jsonify({"error": "Variante não encontrada"}), 404
+    
+    # Validações
+    if not insumos_data or len(insumos_data) == 0:
+        return jsonify({"error": "Pelo menos um insumo deve ser fornecido"}), 400
+
+    try:
+        insumos_criados = []
+        for insumo_data in insumos_data:
+            material = insumo_data.get("material", "").strip()
+            quantidade = insumo_data.get("quantidade")
+            custo_unitario = insumo_data.get("custo_unitario", 0)
+            
+            # Validações de dados
+            if not material:
+                return jsonify({"error": "Material é obrigatório"}), 400
+            
+            if quantidade is None or float(quantidade) <= 0:
+                return jsonify({"error": f"Quantidade deve ser maior que zero para '{material}'"}), 400
+            
+            if float(custo_unitario) < 0:
+                return jsonify({"error": f"Custo unitário não pode ser negativo para '{material}'"}), 400
+            
+            # Verificar duplicação de material na mesma variante
+            insumo_existente = Insumo.query.filter_by(
+                variante_id=variante_id,
+                material=material
+            ).first()
+            
+            if insumo_existente:
+                return jsonify({
+                    "error": f"Insumo '{material}' já existe para esta variante. Atualize o existente ou use outro nome."
+                }), 400
+            
+            insumo = Insumo(
+                variante_id=variante_id,
+                material=material,
+                quantidade=quantidade,
+                custo_unitario=custo_unitario,
+                unidade_medida=insumo_data.get("unidade_medida", "un")
+            )
+            db.session.add(insumo)
+            db.session.flush()
+            
+            insumos_criados.append({
+                "id": insumo.id,
+                "material": insumo.material,
+                "quantidade": float(insumo.quantidade),
+                "custo_unitario": float(insumo.custo_unitario),
+                "custo_total": insumo.custo_total
+            })
+        
+        db.session.commit()
+        
+        # Retornar também os custos atualizados da variante
+        return jsonify({
+            "status": "ok",
+            "mensagem": f"{len(insumos_criados)} insumo(s) cadastrado(s) com sucesso",
+            "insumos": insumos_criados,
+            "custo_producao": float(variante.custo_producao),
+            "preco_venda_sugerido": float(variante.preco_venda_sugerido)
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/insumo/variante/<int:variante_id>", methods=["GET"])
+def listar_insumos_variante(variante_id):
+    """Lista todos os insumos de uma variante específica com custos calculados."""
+    variante = Variante.query.get(variante_id)
+    if not variante:
+        return jsonify({"error": "Variante não encontrada"}), 404
+    
+    insumos = Insumo.query.filter_by(variante_id=variante_id).all()
+    
+    return jsonify({
+        "variante_id": variante_id,
+        "sku": variante.sku,
+        "insumos": [{
+            "id": i.id,
+            "material": i.material,
+            "quantidade": float(i.quantidade),
+            "custo_unitario": float(i.custo_unitario),
+            "unidade_medida": i.unidade_medida,
+            "custo_total": i.custo_total
+        } for i in insumos],
+        "custo_producao": float(variante.custo_producao),
+        "preco_venda_sugerido": float(variante.preco_venda_sugerido),
+        "preco_base_atual": float(variante.preco_base)
+    })
+
+
+@app.route("/insumo/<int:id>", methods=["DELETE"])
+def deletar_insumo(id):
+    """Remove um insumo específico."""
+    try:
+        insumo = Insumo.query.get(id)
+        if not insumo:
+            return jsonify({"status": "erro", "mensagem": "Insumo não encontrado"}), 404
+        
+        variante_id = insumo.variante_id
+        db.session.delete(insumo)
+        db.session.commit()
+        
+        # Retornar custos atualizados
+        variante = Variante.query.get(variante_id)
+        return jsonify({
+            "status": "ok",
+            "mensagem": "Insumo removido com sucesso",
+            "custo_producao": float(variante.custo_producao),
+            "preco_venda_sugerido": float(variante.preco_venda_sugerido)
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+# -------------------
+# Endpoints de Relatórios
+# -------------------
+@app.route("/relatorio/custos", methods=["GET"])
+def relatorio_custos():
+    """
+    Gera relatório completo de custos de todos os produtos ativos.
+    Retorna análise detalhada de insumos, custos e margens.
+    """
+    try:
+        produtos = Produto.query.filter_by(ativo=True).all()
+        relatorio = []
+        
+        for produto in produtos:
+            variantes_info = []
+            
+            for variante in produto.variantes:
+                if not variante.ativo:
+                    continue
+                
+                # Informações dos insumos
+                insumos_detalhes = []
+                custo_total_insumos = 0
+                
+                for insumo in variante.insumos:
+                    custo_insumo = insumo.custo_total
+                    custo_total_insumos += custo_insumo
+                    
+                    insumos_detalhes.append({
+                        "material": insumo.material,
+                        "quantidade": float(insumo.quantidade),
+                        "unidade": insumo.unidade_medida,
+                        "custo_unitario": float(insumo.custo_unitario),
+                        "custo_total": float(custo_insumo)
+                    })
+                
+                # Cálculos
+                custo_producao = variante.custo_producao
+                preco_sugerido = variante.preco_venda_sugerido
+                preco_atual = float(variante.preco_base)
+                
+                # Margens
+                margem_interna = custo_producao - custo_total_insumos
+                margem_venda = preco_atual - custo_producao if preco_atual > 0 else 0
+                percentual_margem = (margem_venda / preco_atual * 100) if preco_atual > 0 else 0
+                
+                # Estoque
+                estoque_info = variante.estoque
+                qtd_estoque = estoque_info.quantidade if estoque_info else 0
+                valor_estoque = qtd_estoque * preco_atual
+                
+                variantes_info.append({
+                    "variante_id": variante.id,
+                    "sku": variante.sku,
+                    "dimensoes": f"{variante.altura_cm}x{variante.largura_cm} cm" if variante.altura_cm and variante.largura_cm else "N/A",
+                    "cor": variante.cor,
+                    "moldura": variante.moldura,
+                    "insumos": insumos_detalhes,
+                    "analise_custos": {
+                        "custo_insumos": float(custo_total_insumos),
+                        "margem_interna_10pct": float(margem_interna),
+                        "custo_producao_total": float(custo_producao),
+                        "preco_sugerido_125pct": float(preco_sugerido),
+                        "preco_venda_atual": float(preco_atual),
+                        "margem_lucro": float(margem_venda),
+                        "percentual_margem": round(percentual_margem, 2)
+                    },
+                    "estoque": {
+                        "quantidade": int(qtd_estoque),
+                        "valor_total": float(valor_estoque)
+                    }
+                })
+            
+            if variantes_info:
+                relatorio.append({
+                    "produto_id": produto.id,
+                    "linha": produto.linha,
+                    "formato": produto.formato,
+                    "descricao": produto.descricao,
+                    "total_variantes": len(variantes_info),
+                    "variantes": variantes_info
+                })
+        
+        return jsonify({
+            "status": "ok",
+            "total_produtos": len(relatorio),
+            "data_geracao": datetime.utcnow().isoformat(),
+            "relatorio": relatorio
+        })
+    
+    except Exception as e:
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+@app.route("/relatorio/custos/produto/<int:produto_id>", methods=["GET"])
+def relatorio_custos_produto(produto_id):
+    """Relatório de custos de um produto específico."""
+    try:
+        produto = Produto.query.get(produto_id)
+        if not produto:
+            return jsonify({"error": "Produto não encontrado"}), 404
+        
+        variantes_info = []
+        for variante in produto.variantes:
+            if not variante.ativo:
+                continue
+            
+            insumos_detalhes = [{
+                "material": i.material,
+                "quantidade": float(i.quantidade),
+                "unidade": i.unidade_medida,
+                "custo_unitario": float(i.custo_unitario),
+                "custo_total": float(i.custo_total)
+            } for i in variante.insumos]
+            
+            variantes_info.append({
+                "variante_id": variante.id,
+                "sku": variante.sku,
+                "insumos": insumos_detalhes,
+                "custo_producao": float(variante.custo_producao),
+                "preco_sugerido": float(variante.preco_venda_sugerido),
+                "preco_atual": float(variante.preco_base)
+            })
+        
+        return jsonify({
+            "produto_id": produto.id,
+            "linha": produto.linha,
+            "formato": produto.formato,
+            "variantes": variantes_info
+        })
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # -------------------

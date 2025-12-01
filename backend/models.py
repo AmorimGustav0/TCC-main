@@ -72,9 +72,21 @@ class Variante(db.Model):
     # Relacionamentos
     estoque = db.relationship("Estoque", uselist=False, backref="variante", lazy=True)
     itens_pedido = db.relationship("ItemPedido", backref="variante", lazy=True)
+    insumos = db.relationship("Insumo", backref="variante", lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Variante SKU:{self.sku} Produto:{self.produto_id}>"
+    
+    @property
+    def custo_producao(self):
+        """Calcula o custo de produção: soma dos insumos + 10% margem interna"""
+        custo_insumos = sum(float(i.quantidade) * float(i.custo_unitario) for i in self.insumos)
+        return custo_insumos * 1.10  # 10% margem interna
+    
+    @property
+    def preco_venda_sugerido(self):
+        """Calcula o preço de venda sugerido: 125% do custo de produção"""
+        return self.custo_producao * 1.25
 
 
 # ==========================
@@ -151,6 +163,30 @@ class ItemPedido(db.Model):
 
     def __repr__(self):
         return f"<ItemPedido Pedido:{self.pedido_id} Variante:{self.variante_id}>"
+
+
+# ==========================
+# 🧩 Tabela: Insumo
+# ==========================
+class Insumo(db.Model):
+    __tablename__ = "insumos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    variante_id = db.Column(db.Integer, db.ForeignKey("variante.id"), nullable=False)
+    material = db.Column(db.String(255), nullable=False)
+    quantidade = db.Column(db.Numeric(10,3), nullable=False)
+    custo_unitario = db.Column(db.Numeric(12,2), nullable=False, default=0.00)
+    unidade_medida = db.Column(db.String(50), default='un')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Insumo {self.material} - Variante:{self.variante_id}>"
+    
+    @property
+    def custo_total(self):
+        """Retorna o custo total deste insumo (quantidade × custo_unitario)"""
+        return float(self.quantidade) * float(self.custo_unitario)
 
 
 # ==========================
@@ -233,3 +269,31 @@ def registrar_saida_variante(variante_id, quantidade, usuario_id=None, motivo="S
         db.session.commit()
 
     return estoque.quantidade
+
+
+# ==========================
+# Funções Utilitárias de Cálculo de Custos
+# ==========================
+
+def calcular_custo_producao(variante_id: int) -> float:
+    """
+    Calcula o custo de produção de uma variante.
+    Fórmula: (Soma dos custos dos insumos) × 1.10 (margem interna de 10%)
+    """
+    variante = Variante.query.get(variante_id)
+    if not variante:
+        raise ValueError("Variante não encontrada")
+    
+    return variante.custo_producao
+
+
+def calcular_preco_venda(variante_id: int) -> float:
+    """
+    Calcula o preço de venda sugerido de uma variante.
+    Fórmula: Custo de Produção × 1.25 (125%)
+    """
+    variante = Variante.query.get(variante_id)
+    if not variante:
+        raise ValueError("Variante não encontrada")
+    
+    return variante.preco_venda_sugerido
