@@ -89,17 +89,16 @@ DROP TABLE IF EXISTS `clientes`;
 CREATE TABLE `clientes` (
   `id_clientes` int NOT NULL AUTO_INCREMENT,
   `id_endereco` int NOT NULL,
-  `nome` varchar(90) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(110) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `telefone` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nome` varchar(90) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(110) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefone` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `cpf_cnpj` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_clientes`),
-  UNIQUE KEY `email` (`email`),
-  KEY `id_endereco_idx` (`id_endereco`),
-  CONSTRAINT `id_endereco` FOREIGN KEY (`id_endereco`) REFERENCES `endereco` (`id_endereco`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `cliente/endereco_idx` (`id_endereco`),
+  CONSTRAINT `cliente/endereco` FOREIGN KEY (`id_endereco`) REFERENCES `endereco` (`id_endereco`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,6 +107,7 @@ CREATE TABLE `clientes` (
 
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
+INSERT INTO `clientes` VALUES (1,1,'Murilo Moedas','murilo@gmail.com','12345','309.558.228-10','2025-12-01 16:28:36','2025-12-01 16:28:36');
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -121,14 +121,14 @@ DROP TABLE IF EXISTS `endereco`;
 CREATE TABLE `endereco` (
   `id_endereco` int NOT NULL AUTO_INCREMENT,
   `cep` varchar(9) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `rua` varchar(105) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `bairro` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cidade` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `estado` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rua` varchar(105) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `numero` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cidade` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `estado` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `complemento` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id_endereco`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,6 +137,7 @@ CREATE TABLE `endereco` (
 
 LOCK TABLES `endereco` WRITE;
 /*!40000 ALTER TABLE `endereco` DISABLE KEYS */;
+INSERT INTO `endereco` VALUES (1,'03938-160','Rua Sonata Aurora','Jardim Paraguaçu','272','São Paulo','SP',NULL);
 /*!40000 ALTER TABLE `endereco` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,7 +157,7 @@ CREATE TABLE `estoque` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `variante_id` (`variante_id`),
   CONSTRAINT `estoque_ibfk_1` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -165,7 +166,7 @@ CREATE TABLE `estoque` (
 
 LOCK TABLES `estoque` WRITE;
 /*!40000 ALTER TABLE `estoque` DISABLE KEYS */;
-INSERT INTO `estoque` VALUES (1,1,0,0,'2025-11-18 14:34:50'),(2,2,0,0,'2025-11-18 14:35:16'),(3,3,0,0,'2025-11-18 14:35:00'),(4,4,0,0,'2025-11-18 19:23:48'),(5,5,0,0,'2025-11-18 19:15:57'),(6,6,0,0,'2025-11-18 20:23:50');
+INSERT INTO `estoque` VALUES (1,1,0,0,'2025-11-18 14:34:50'),(2,2,0,0,'2025-11-18 14:35:16'),(3,3,0,0,'2025-11-18 14:35:00'),(4,4,0,0,'2025-11-18 19:23:48'),(5,5,0,0,'2025-11-18 19:15:57'),(6,6,0,0,'2025-11-18 20:23:50'),(7,7,5,0,'2025-12-01 15:42:56');
 /*!40000 ALTER TABLE `estoque` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,6 +197,38 @@ CREATE TABLE `fase_op` (
 LOCK TABLES `fase_op` WRITE;
 /*!40000 ALTER TABLE `fase_op` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fase_op` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `insumos`
+--
+
+DROP TABLE IF EXISTS `insumos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `insumos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `variante_id` int NOT NULL,
+  `material` varchar(255) NOT NULL,
+  `quantidade` decimal(10,3) NOT NULL,
+  `custo_unitario` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `unidade_medida` varchar(50) DEFAULT 'un',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_insumos_variante` (`variante_id`),
+  CONSTRAINT `fk_insumos_variante` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `insumos`
+--
+
+LOCK TABLES `insumos` WRITE;
+/*!40000 ALTER TABLE `insumos` DISABLE KEYS */;
+INSERT INTO `insumos` VALUES (1,7,'vidro 4mm',1.000,50.00,'un','2025-12-01 15:42:56','2025-12-01 15:42:56'),(2,7,'plastico',1.000,10.00,'m','2025-12-01 15:42:56','2025-12-01 15:42:56');
+/*!40000 ALTER TABLE `insumos` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -395,7 +428,7 @@ CREATE TABLE `produto` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -404,7 +437,7 @@ CREATE TABLE `produto` (
 
 LOCK TABLES `produto` WRITE;
 /*!40000 ALTER TABLE `produto` DISABLE KEYS */;
-INSERT INTO `produto` VALUES (1,'espelho grande','redondo','espelho redondo grande','',1,'2025-11-17 18:44:00','2025-11-17 18:44:00'),(2,'espelho grande','quadrado','sim','',1,'2025-11-17 18:46:48','2025-11-17 18:46:48'),(3,'espelho grande','losango','é um espelho','',1,'2025-11-17 18:55:42','2025-11-17 18:55:42'),(4,'espelho grande','losango','é um espelho','',1,'2025-11-17 20:13:46','2025-11-17 20:13:46'),(5,'espelho prime','retangular','espelho safado','',1,'2025-11-18 16:52:47','2025-11-18 16:52:47'),(6,'espelho','retangular','sim','',1,'2025-11-18 19:12:55','2025-11-18 19:12:55'),(7,'espelho','redondo','sim','',1,'2025-11-18 19:29:52','2025-11-18 19:29:52');
+INSERT INTO `produto` VALUES (1,'espelho grande','redondo','espelho redondo grande','',1,'2025-11-17 18:44:00','2025-11-17 18:44:00'),(2,'espelho grande','quadrado','sim','',1,'2025-11-17 18:46:48','2025-11-17 18:46:48'),(3,'espelho grande','losango','é um espelho','',1,'2025-11-17 18:55:42','2025-11-17 18:55:42'),(4,'espelho grande','losango','é um espelho','',1,'2025-11-17 20:13:46','2025-11-17 20:13:46'),(5,'espelho prime','retangular','espelho safado','',1,'2025-11-18 16:52:47','2025-11-18 16:52:47'),(6,'espelho','retangular','sim','',1,'2025-11-18 19:12:55','2025-11-18 19:12:55'),(7,'espelho','redondo','sim','',1,'2025-11-18 19:29:52','2025-11-18 19:29:52'),(8,'Espelho','redondo','espelho redondo com moldura de aluminio',NULL,1,'2025-12-01 15:42:56','2025-12-01 15:42:56');
 /*!40000 ALTER TABLE `produto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -484,7 +517,7 @@ CREATE TABLE `usuario` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -493,7 +526,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'henzo','henzo@gmail.com','scrypt:32768:8:1$GiQ87ZPnM8u4bTlm$60b3c55ce49714d62c23b0f2ccc307da651b78f2d2261c856e018a05e55d9284bd49042ed19fb02314dd3e888e4a368bec6022081e9a5e11b7d72e623d113377','cliente',1,'2025-11-03 14:47:54','2025-11-03 11:47:53'),(2,'bruno','1@gmail.com','scrypt:32768:8:1$bIpTiikJSTb1yEqp$32c6d907918c5d5abea3d741462c45222776d46ee81a29db53e177cef8b4392c078b6ec71ecfbf7c9c3ec4438d87b01cc35de8f518ef1de5851676cc906fc8f1','cliente',1,'2025-11-03 15:05:33','2025-11-03 12:05:32'),(3,'bruno','bruno@gmail.com','scrypt:32768:8:1$fFnxaDxfYk8PvpjF$7dee3a7a08a38ccb765581d3e7f4df68fbdf252e913df34b572257fb70a7f23a7ebbde4204e2179c6b7f96623e9e45554adcff4814cb13712888102ed187826a','cliente',1,'2025-11-03 17:18:45','2025-11-03 14:18:45'),(4,'inouye','inouye@gmail.com','scrypt:32768:8:1$QXVyedfNNjurFYBg$c1c75c4f08c90139832d5af1bedab2998299f0097e688c0f0edea4b913db286f57944036568d0d118417e5c57ba6f1c5582c2ff650ef8d9039258698c7e6e1cd','cliente',1,'2025-11-18 21:35:55','2025-11-18 21:35:55');
+INSERT INTO `usuario` VALUES (1,'henzo','henzo@gmail.com','scrypt:32768:8:1$GiQ87ZPnM8u4bTlm$60b3c55ce49714d62c23b0f2ccc307da651b78f2d2261c856e018a05e55d9284bd49042ed19fb02314dd3e888e4a368bec6022081e9a5e11b7d72e623d113377','cliente',1,'2025-11-03 14:47:54','2025-11-03 11:47:53'),(2,'bruno','1@gmail.com','scrypt:32768:8:1$bIpTiikJSTb1yEqp$32c6d907918c5d5abea3d741462c45222776d46ee81a29db53e177cef8b4392c078b6ec71ecfbf7c9c3ec4438d87b01cc35de8f518ef1de5851676cc906fc8f1','cliente',1,'2025-11-03 15:05:33','2025-11-03 12:05:32'),(3,'bruno','bruno@gmail.com','scrypt:32768:8:1$fFnxaDxfYk8PvpjF$7dee3a7a08a38ccb765581d3e7f4df68fbdf252e913df34b572257fb70a7f23a7ebbde4204e2179c6b7f96623e9e45554adcff4814cb13712888102ed187826a','cliente',1,'2025-11-03 17:18:45','2025-11-03 14:18:45'),(4,'inouye','inouye@gmail.com','scrypt:32768:8:1$QXVyedfNNjurFYBg$c1c75c4f08c90139832d5af1bedab2998299f0097e688c0f0edea4b913db286f57944036568d0d118417e5c57ba6f1c5582c2ff650ef8d9039258698c7e6e1cd','cliente',1,'2025-11-18 21:35:55','2025-11-18 21:35:55'),(5,'gustavo','gustavo@gmail.com','scrypt:32768:8:1$UV6wAl3m1LEVKJfH$b806670800c2a959b94c25b874facb8975bde4097c2afd3d17cd823e6979a416d52ea2cd76232aa8b1bffa99730423cded317394c8daf5623bfa5c58ec92022f','cliente',1,'2025-12-01 15:15:16','2025-12-01 15:15:16');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -522,7 +555,7 @@ CREATE TABLE `variante` (
   UNIQUE KEY `sku` (`sku`),
   KEY `variante_ibfk_1` (`produto_id`),
   CONSTRAINT `variante_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produto` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -531,39 +564,8 @@ CREATE TABLE `variante` (
 
 LOCK TABLES `variante` WRITE;
 /*!40000 ALTER TABLE `variante` DISABLE KEYS */;
-INSERT INTO `variante` VALUES (1,2,100.00,150.00,'preto',0,0,'sem','ESP-100-150-PRETO-SEM',150.00,0,'2025-11-17 18:46:48','2025-11-18 14:34:50'),(2,3,100.00,150.00,'branco',1,1,'aluminio','ESP-100-150-BRANCO-ALUM',200.00,0,'2025-11-17 18:55:42','2025-11-18 14:35:16'),(3,4,500.00,300.00,'amarelo',1,0,'metal','ESP-500-300-AMAREL-META',500.00,0,'2025-11-17 20:13:46','2025-11-18 14:35:00'),(4,5,600.00,300.00,'branco',1,1,'metal','ESP-600-300-BRANCO-META',155.00,0,'2025-11-18 16:52:47','2025-11-18 19:23:48'),(5,6,100.00,100.00,'preto',1,0,'metal','ESP-100-100-PRETO-META',150.00,0,'2025-11-18 19:12:55','2025-11-18 19:15:57'),(6,7,100.00,120.00,'preto',1,1,'metal','ESP-100-120-PRETO-META',150.00,0,'2025-11-18 19:29:52','2025-11-18 20:23:50');
+INSERT INTO `variante` VALUES (1,2,100.00,150.00,'preto',0,0,'sem','ESP-100-150-PRETO-SEM',150.00,0,'2025-11-17 18:46:48','2025-11-18 14:34:50'),(2,3,100.00,150.00,'branco',1,1,'aluminio','ESP-100-150-BRANCO-ALUM',200.00,0,'2025-11-17 18:55:42','2025-11-18 14:35:16'),(3,4,500.00,300.00,'amarelo',1,0,'metal','ESP-500-300-AMAREL-META',500.00,0,'2025-11-17 20:13:46','2025-11-18 14:35:00'),(4,5,600.00,300.00,'branco',1,1,'metal','ESP-600-300-BRANCO-META',155.00,0,'2025-11-18 16:52:47','2025-11-18 19:23:48'),(5,6,100.00,100.00,'preto',1,0,'metal','ESP-100-100-PRETO-META',150.00,0,'2025-11-18 19:12:55','2025-11-18 19:15:57'),(6,7,100.00,120.00,'preto',1,1,'metal','ESP-100-120-PRETO-META',150.00,0,'2025-11-18 19:29:52','2025-11-18 20:23:50'),(7,8,50.00,50.00,'preto',0,0,'aluminio','ESP-50-50-PRETO-ALUM',68.75,1,'2025-12-01 15:42:56','2025-12-01 15:42:56');
 /*!40000 ALTER TABLE `variante` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `insumos`
---
-
-DROP TABLE IF EXISTS `insumos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `insumos` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `variante_id` int NOT NULL,
-  `material` varchar(255) NOT NULL,
-  `quantidade` decimal(10,3) NOT NULL,
-  `custo_unitario` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `unidade_medida` varchar(50) DEFAULT 'un',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk_insumos_variante` (`variante_id`),
-  CONSTRAINT `fk_insumos_variante` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `insumos`
---
-
-LOCK TABLES `insumos` WRITE;
-/*!40000 ALTER TABLE `insumos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `insumos` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -625,4 +627,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-24  8:36:11
+-- Dump completed on 2025-12-01 10:29:16

@@ -558,7 +558,7 @@ def api_atividades_recentes():
         nome_exemplo = "Produtos diversos"
         if p.itens:
             primeiro_item = p.itens[0]
-            var = Variante.query.get(primeiro_item.variante_id)
+            var = db.session.get(Variante, primeiro_item.variante_id)
             if var and var.produto:
                 nome_exemplo = f"{var.produto.linha}"
             else:
@@ -578,7 +578,7 @@ def api_atividades_recentes():
     ultimos_produtos = Variante.query.filter_by(ativo=True).order_by(Variante.created_at.desc()).limit(50).all()
     for v in ultimos_produtos:
         nome_prod = "Produto"
-        prod = Produto.query.get(v.produto_id)
+        prod = db.session.get(Produto, v.produto_id)
         if prod:
             nome_prod = f"{prod.linha} {prod.formato}"
         
