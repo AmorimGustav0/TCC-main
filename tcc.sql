@@ -87,14 +87,18 @@ DROP TABLE IF EXISTS `clientes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `clientes` (
-  `id_clientes` int NOT NULL,
+  `id_clientes` int NOT NULL AUTO_INCREMENT,
   `id_endereco` int NOT NULL,
   `nome` varchar(90) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(110) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `numero` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefone` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cpf_cnpj` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_clientes`),
+  UNIQUE KEY `email` (`email`),
   KEY `id_endereco_idx` (`id_endereco`),
-  CONSTRAINT `id_endereco` FOREIGN KEY (`id_endereco`) REFERENCES `endereco` (`id_endereco`)
+  CONSTRAINT `id_endereco` FOREIGN KEY (`id_endereco`) REFERENCES `endereco` (`id_endereco`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -115,11 +119,14 @@ DROP TABLE IF EXISTS `endereco`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `endereco` (
-  `id_endereco` int NOT NULL,
-  `cep` int NOT NULL,
+  `id_endereco` int NOT NULL AUTO_INCREMENT,
+  `cep` varchar(9) COLLATE utf8mb4_unicode_ci NOT NULL,
   `rua` varchar(105) COLLATE utf8mb4_unicode_ci NOT NULL,
   `bairro` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `numero` int NOT NULL,
+  `cidade` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `estado` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `numero` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `complemento` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id_endereco`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

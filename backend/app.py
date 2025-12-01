@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import init_app, db
 from models import (
     Usuario, Produto, Variante, Estoque, MovimentoEstoque,
-    Pedido, ItemPedido, Insumo,
+    Pedido, ItemPedido, Insumo, Cliente, Endereco,
     registrar_entrada_variante, registrar_saida_variante,
     calcular_custo_producao, calcular_preco_venda
 )
@@ -763,10 +763,110 @@ def deletar_insumo(id):
             "mensagem": "Insumo removido com sucesso",
             "custo_producao": float(variante.custo_producao),
             "preco_venda_sugerido": float(variante.preco_venda_sugerido)
-        })
-    except Exception as e:
+        })\n    except Exception as e:
         db.session.rollback()
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+# -------------------
+# Endpoints de Clientes e Endereços
+# -------------------
+@app.route("/cliente/criar", methods=["POST"])
+def criar_cliente():
+    """Cria um novo cliente com endereço."""
+    data = request.get_json()
+    
+    # Validações
+    nome = data.get("nome", "").strip()
+    email = data.get("email", "").strip()
+    telefone = data.get("telefone", "").strip()
+    endereco_data = data.get("endereco", {})
+    
+    if not nome or not email or not telefone:
+        return jsonify({"error": "Nome, email e telefone são obrigatórios"}), 400
+    
+    # Verificar se email já existe
+    if Cliente.query.filter_by(email=email.lower()).first():
+        return jsonify({"error": "Email já cadastrado"}), 400
+    
+    # Validar endereço
+    cep = endereco_data.get("cep", "").strip()
+    rua = endereco_data.get("rua", "").strip()
+    bairro = endereco_data.get("bairro", "").strip()
+    cidade = endereco_data.get("cidade", "").strip()
+    estado = endereco_data.get("estado", "").strip()
+    numero = endereco_data.get("numero", "").strip()
+    
+    if not all([cep, rua, bairro, cidade, estado, numero]):
+        return jsonify({"error": "Todos os campos de endereço são obrigatórios"}), 400
+    
+    try:
+        # Criar endereço
+        endereco = Endereco(
+            cep=cep, rua=rua, bairro=bairro, cidade=cidade,
+            estado=estado.upper(), numero=numero,
+            complemento=endereco_data.get("complemento", "").strip() or None
+        )
+        db.session.add(endereco)
+        db.session.flush()
+        
+        # Criar cliente
+        cliente = Cliente(
+            id_endereco=endereco.id_endereco, nome=nome,
+            email=email.lower(), telefone=telefone,
+            cpf_cnpj=data.get("cpf_cnpj", "").strip() or None
+        )
+        db.session.add(cliente)
+        db.session.commit()
+        
+        return jsonify({
+            "status": "ok",
+            "mensagem": "Cliente cadastrado com sucesso",
+            "cliente_id": cliente.id_clientes
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/clientes/listar", methods=["GET"])
+def listar_todos_clientes():
+    """Lista todos os clientes com endereços."""
+    try:
+        clientes = Cliente.query.all()
+        return jsonify([{
+            "id": c.id_clientes,
+            "nome": c.nome,
+            "email": c.email,
+            "telefone": c.telefone,
+            "cpf_cnpj": c.cpf_cnpj,
+            "endereco": {
+                "cep": c.endereco.cep,
+                "rua": c.endereco.rua,
+                "numero": c.endereco.numero,
+                "bairro": c.endereco.bairro,
+                "cidade": c.endereco.cidade,
+                "estado": c.endereco.estado
+            }
+        } for c in clientes])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/cliente/<int:id>", methods=["DELETE"])
+def deletar_cliente_endpoint(id):
+    """Deleta um cliente."""
+    try:
+        cliente = Cliente.query.get(id)
+        if not cliente:
+            return jsonify({"error": "Cliente não encontrado"}), 404
+        
+        db.session.delete(cliente)
+        db.session.commit()
+        return jsonify({"status": "ok", "mensagem": "Cliente deletado"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 
 # -------------------

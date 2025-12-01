@@ -29,6 +29,47 @@ class Usuario(db.Model):
 
 
 # ==========================
+# 📍 Tabela de Endereço
+# ==========================
+class Endereco(db.Model):
+    __tablename__ = "endereco"
+
+    id_endereco = db.Column(db.Integer, primary_key=True)
+    cep = db.Column(db.String(9), nullable=False)
+    rua = db.Column(db.String(105), nullable=False)
+    bairro = db.Column(db.String(100), nullable=False)
+    cidade = db.Column(db.String(100), nullable=False)
+    estado = db.Column(db.String(2), nullable=False)
+    numero = db.Column(db.String(10), nullable=False)
+    complemento = db.Column(db.String(100))
+
+    # Relacionamento
+    clientes = db.relationship("Cliente", backref="endereco", lazy=True, cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Endereco {self.rua}, {self.numero} - {self.cidade}/{self.estado}>"
+
+
+# ==========================
+# 👤 Tabela de Cliente
+# ==========================
+class Cliente(db.Model):
+    __tablename__ = "clientes"
+
+    id_clientes = db.Column(db.Integer, primary_key=True)
+    id_endereco = db.Column(db.Integer, db.ForeignKey("endereco.id_endereco"), nullable=False)
+    nome = db.Column(db.String(90), nullable=False)
+    email = db.Column(db.String(110), nullable=False, unique=True, index=True)
+    telefone = db.Column(db.String(15), nullable=False)
+    cpf_cnpj = db.Column(db.String(18))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Cliente {self.nome}>"
+
+
+# ==========================
 # 📦 Tabela de Produto
 # ==========================
 class Produto(db.Model):
