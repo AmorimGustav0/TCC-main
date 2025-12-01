@@ -23,20 +23,36 @@ header {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     width: 100%;
-    padding: 20px 0;
-    text-align: center;
+    padding: 20px 40px; /* um pouco mais de espaço nas laterais */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     position: sticky;
     top: 0;
     z-index: 10;
     transition: all 0.3s ease-in-out;
+
+    display: flex; /* faz o layout lado a lado */
+    justify-content: space-between; /* título à esquerda, nav à direita */
+    align-items: center; /* centraliza verticalmente */
+    text-align: left; /* garante alinhamento do título */
 }
 
 header h1 {
     color: #1E3C72;
     font-family: 'Poppins', sans-serif;
-    margin-bottom: 10px;
+    margin: 0;
     letter-spacing: 1px;
+}
+
+header h1 a {
+    color: #1E3C72;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 1px;
+    text-decoration: none;
+}
+
+header nav {
+    display: flex;
+    align-items: center;
 }
 
 header nav a {

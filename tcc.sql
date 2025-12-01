@@ -1,8 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `sistema` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `sistema`;
+CREATE DATABASE  IF NOT EXISTS `sistema_tcc` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `sistema_tcc`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: sistema
+-- Host: localhost    Database: sistema_tcc
 -- ------------------------------------------------------
 -- Server version	8.0.35
 
@@ -27,16 +27,16 @@ DROP TABLE IF EXISTS `agendamento_entrega`;
 CREATE TABLE `agendamento_entrega` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pedido_id` int NOT NULL,
-  `endereco` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `endereco` text NOT NULL,
   `data_prevista` timestamp NOT NULL,
-  `motorista` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `veiculo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `observacao` text COLLATE utf8mb4_unicode_ci,
+  `motorista` varchar(255) DEFAULT NULL,
+  `veiculo` varchar(255) DEFAULT NULL,
+  `observacao` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `pedido_id` (`pedido_id`),
-  CONSTRAINT `agendamento_entrega_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `agendamento_entrega_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,6 @@ CREATE TABLE `agendamento_entrega` (
 
 LOCK TABLES `agendamento_entrega` WRITE;
 /*!40000 ALTER TABLE `agendamento_entrega` DISABLE KEYS */;
-INSERT INTO `agendamento_entrega` VALUES (1,1,'Rua das Flores, 123','2025-10-07 12:01:18','José da Silva','Caminhão VW',NULL,'2025-10-06 12:01:18'),(2,2,'Av. Central, 890','2025-10-08 12:01:18','Carlos Lima','Van Sprinter',NULL,'2025-10-06 12:01:18'),(3,3,'Rodovia BR-290, km 15','2025-10-09 12:01:18','Paulo César','Fiorino',NULL,'2025-10-06 12:01:18');
 /*!40000 ALTER TABLE `agendamento_entrega` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -59,16 +58,16 @@ DROP TABLE IF EXISTS `anexo_pedido`;
 CREATE TABLE `anexo_pedido` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pedido_id` int NOT NULL,
-  `arquivo_url` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `arquivo_url` text NOT NULL,
+  `tipo` varchar(100) DEFAULT NULL,
   `enviado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `enviado_por` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `enviado_por` (`enviado_por`),
-  KEY `idx_anexo_pedido` (`pedido_id`),
-  CONSTRAINT `anexo_pedido_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `anexo_pedido_ibfk_2` FOREIGN KEY (`enviado_por`) REFERENCES `usuario` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `anexo_pedido_ibfk_1` (`pedido_id`),
+  KEY `anexo_pedido_ibfk_2` (`enviado_por`),
+  CONSTRAINT `anexo_pedido_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `anexo_pedido_ibfk_2` FOREIGN KEY (`enviado_por`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -77,8 +76,61 @@ CREATE TABLE `anexo_pedido` (
 
 LOCK TABLES `anexo_pedido` WRITE;
 /*!40000 ALTER TABLE `anexo_pedido` DISABLE KEYS */;
-INSERT INTO `anexo_pedido` VALUES (1,1,'https://mevglass.com/docs/orcamento1.pdf','PDF','2025-10-06 12:01:18',1),(2,2,'https://mevglass.com/docs/projeto2.jpg','Imagem','2025-10-06 12:01:18',2),(3,3,'https://mevglass.com/docs/nota3.pdf','Nota Fiscal','2025-10-06 12:01:18',3);
 /*!40000 ALTER TABLE `anexo_pedido` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `clientes`
+--
+
+DROP TABLE IF EXISTS `clientes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `clientes` (
+  `id_clientes` int NOT NULL,
+  `id_endereco` int NOT NULL,
+  `nome` varchar(90) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(110) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `numero` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_clientes`),
+  KEY `id_endereco_idx` (`id_endereco`),
+  CONSTRAINT `id_endereco` FOREIGN KEY (`id_endereco`) REFERENCES `endereco` (`id_endereco`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `clientes`
+--
+
+LOCK TABLES `clientes` WRITE;
+/*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `endereco`
+--
+
+DROP TABLE IF EXISTS `endereco`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `endereco` (
+  `id_endereco` int NOT NULL,
+  `cep` int NOT NULL,
+  `rua` varchar(105) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `bairro` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `numero` int NOT NULL,
+  PRIMARY KEY (`id_endereco`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `endereco`
+--
+
+LOCK TABLES `endereco` WRITE;
+/*!40000 ALTER TABLE `endereco` DISABLE KEYS */;
+/*!40000 ALTER TABLE `endereco` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -96,8 +148,8 @@ CREATE TABLE `estoque` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `variante_id` (`variante_id`),
-  CONSTRAINT `estoque_ibfk_1` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `estoque_ibfk_1` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,6 +158,7 @@ CREATE TABLE `estoque` (
 
 LOCK TABLES `estoque` WRITE;
 /*!40000 ALTER TABLE `estoque` DISABLE KEYS */;
+INSERT INTO `estoque` VALUES (1,1,0,0,'2025-11-18 14:34:50'),(2,2,0,0,'2025-11-18 14:35:16'),(3,3,0,0,'2025-11-18 14:35:00'),(4,4,0,0,'2025-11-18 19:23:48'),(5,5,0,0,'2025-11-18 19:15:57'),(6,6,0,0,'2025-11-18 20:23:50');
 /*!40000 ALTER TABLE `estoque` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -119,15 +172,14 @@ DROP TABLE IF EXISTS `fase_op`;
 CREATE TABLE `fase_op` (
   `id` int NOT NULL AUTO_INCREMENT,
   `op_id` int NOT NULL,
-  `nome` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` enum('pendente','em_execucao','concluida') COLLATE utf8mb4_unicode_ci DEFAULT 'pendente',
+  `nome` varchar(255) NOT NULL,
+  `status` enum('pendente','em_execucao','concluida') DEFAULT 'pendente',
   `inicio` timestamp NULL DEFAULT NULL,
   `fim` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_fase_op_op` (`op_id`),
-  KEY `idx_fase_op_status` (`status`),
-  CONSTRAINT `fase_op_ibfk_1` FOREIGN KEY (`op_id`) REFERENCES `op_producao` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fase_op_ibfk_1` (`op_id`),
+  CONSTRAINT `fase_op_ibfk_1` FOREIGN KEY (`op_id`) REFERENCES `op_producao` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +188,6 @@ CREATE TABLE `fase_op` (
 
 LOCK TABLES `fase_op` WRITE;
 /*!40000 ALTER TABLE `fase_op` DISABLE KEYS */;
-INSERT INTO `fase_op` VALUES (1,1,'Corte','em_execucao','2025-10-06 12:01:18',NULL),(2,2,'Lapidação','pendente',NULL,NULL),(3,3,'Montagem','concluida','2025-10-04 12:01:18',NULL);
 /*!40000 ALTER TABLE `fase_op` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -154,14 +205,13 @@ CREATE TABLE `item_pedido` (
   `quantidade` int NOT NULL,
   `preco_unit` decimal(12,2) NOT NULL,
   `valor_total` decimal(12,2) NOT NULL,
-  `observacoes` text COLLATE utf8mb4_unicode_ci,
+  `observacoes` text,
   PRIMARY KEY (`id`),
-  KEY `pedido_id` (`pedido_id`),
-  KEY `variante_id` (`variante_id`),
+  KEY `item_pedido_ibfk_1` (`pedido_id`),
+  KEY `item_pedido_ibfk_2` (`variante_id`),
   CONSTRAINT `item_pedido_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `item_pedido_ibfk_2` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `item_pedido_chk_1` CHECK ((`quantidade` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `item_pedido_ibfk_2` FOREIGN KEY (`variante_id`) REFERENCES `variante` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -170,7 +220,7 @@ CREATE TABLE `item_pedido` (
 
 LOCK TABLES `item_pedido` WRITE;
 /*!40000 ALTER TABLE `item_pedido` DISABLE KEYS */;
-INSERT INTO `item_pedido` VALUES (1,1,2,2,50.00,100.00,NULL),(2,2,1,100,100.00,10000.00,NULL);
+INSERT INTO `item_pedido` VALUES (19,19,6,35,150.00,5250.00,NULL),(20,20,6,5,150.00,750.00,NULL);
 /*!40000 ALTER TABLE `item_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -182,17 +232,8 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_item_pedido_before_insert` BEFORE INSERT ON `item_pedido` FOR EACH ROW BEGIN
-    DECLARE v_preco DECIMAL(12,2);
-
-    -- pega o preço da variante
-    SELECT preco_base INTO v_preco
-    FROM variante
-    WHERE id = NEW.variante_id;
-
-    -- preenche preco_unit e valor_total
-    SET NEW.preco_unit = v_preco;
-    SET NEW.valor_total = NEW.quantidade * v_preco;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `tr_item_pedido_valor_total` BEFORE INSERT ON `item_pedido` FOR EACH ROW BEGIN
+  SET NEW.valor_total = NEW.preco_unit * NEW.quantidade;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -208,59 +249,8 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pedido_total_after_item` AFTER INSERT ON `item_pedido` FOR EACH ROW BEGIN
-    UPDATE pedido
-    SET total = (
-        SELECT SUM(valor_total) FROM item_pedido WHERE pedido_id = NEW.pedido_id
-    )
-    WHERE id = NEW.pedido_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_item_pedido_before_update` BEFORE UPDATE ON `item_pedido` FOR EACH ROW BEGIN
-    DECLARE v_preco DECIMAL(12,2);
-
-    -- pega o preço da variante
-    SELECT preco_base INTO v_preco
-    FROM variante
-    WHERE id = NEW.variante_id;
-
-    -- atualiza preco_unit e valor_total
-    SET NEW.preco_unit = v_preco;
-    SET NEW.valor_total = NEW.quantidade * v_preco;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pedido_total_after_item_update` AFTER UPDATE ON `item_pedido` FOR EACH ROW BEGIN
-    UPDATE pedido
-    SET total = (
-        SELECT SUM(valor_total) FROM item_pedido WHERE pedido_id = NEW.pedido_id
-    )
-    WHERE id = NEW.pedido_id;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `tr_item_pedido_valor_total_update` BEFORE UPDATE ON `item_pedido` FOR EACH ROW BEGIN
+  SET NEW.valor_total = NEW.preco_unit * NEW.quantidade;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -280,16 +270,15 @@ CREATE TABLE `movimento_estoque` (
   `estoque_id` int NOT NULL,
   `usuario_id` int DEFAULT NULL,
   `quantidade` int NOT NULL,
-  `motivo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `motivo` varchar(255) NOT NULL,
   `data` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `observacao` text COLLATE utf8mb4_unicode_ci,
+  `observacao` text,
   PRIMARY KEY (`id`),
-  KEY `usuario_id` (`usuario_id`),
-  KEY `idx_movestoque_estoque` (`estoque_id`),
-  KEY `idx_movestoque_data` (`data`),
-  CONSTRAINT `movimento_estoque_ibfk_1` FOREIGN KEY (`estoque_id`) REFERENCES `estoque` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `movimento_estoque_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `movimento_estoque_ibfk_1` (`estoque_id`),
+  KEY `movimento_estoque_ibfk_2` (`usuario_id`),
+  CONSTRAINT `movimento_estoque_ibfk_1` FOREIGN KEY (`estoque_id`) REFERENCES `estoque` (`id`),
+  CONSTRAINT `movimento_estoque_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -298,9 +287,28 @@ CREATE TABLE `movimento_estoque` (
 
 LOCK TABLES `movimento_estoque` WRITE;
 /*!40000 ALTER TABLE `movimento_estoque` DISABLE KEYS */;
-INSERT INTO `movimento_estoque` VALUES (1,1,1,5,'Reabastecimento','2025-10-06 12:01:18',NULL),(2,2,2,-2,'Saída para pedido','2025-10-06 12:01:18',NULL),(3,3,3,3,'Ajuste de inventário','2025-10-06 12:01:18',NULL);
+INSERT INTO `movimento_estoque` VALUES (1,1,1,5,'Entrada manual','2025-11-17 18:47:41',NULL),(2,1,1,5,'Entrada manual','2025-11-17 18:47:45',NULL),(3,1,1,5,'Entrada manual','2025-11-17 18:47:52',NULL),(4,2,2,-5,'Venda','2025-11-17 19:27:21',NULL),(5,1,1,-10,'Venda','2025-11-17 19:29:53',NULL),(6,1,1,5,'Venda','2025-11-17 19:49:54',NULL),(7,2,1,5,'Entrada manual','2025-11-17 19:50:20',NULL),(8,2,2,5,'Venda','2025-11-17 19:52:31',NULL),(9,2,1,5,'Venda','2025-11-17 19:52:49',NULL),(10,2,1,1,'Entrada manual','2025-11-17 20:02:21',NULL),(11,2,1,1,'Entrada manual','2025-11-17 20:02:44',NULL),(12,3,2,150,'Venda','2025-11-17 21:32:40',NULL),(13,3,1,300,'Venda','2025-11-17 21:39:42',NULL),(14,1,1,5,'Venda','2025-11-17 21:40:28',NULL),(15,3,1,250,'Venda','2025-11-17 22:02:07',NULL),(16,1,1,6,'Venda','2025-11-17 22:12:26',NULL),(17,1,2,10,'Venda','2025-11-17 22:15:18',NULL),(18,2,1,5,'Venda','2025-11-17 22:18:35',NULL),(19,3,1,150,'Venda','2025-11-17 22:24:08',NULL),(20,3,1,150,'Venda Pedido #17','2025-11-18 14:23:08',NULL);
 /*!40000 ALTER TABLE `movimento_estoque` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `tr_movimento_estoque` AFTER INSERT ON `movimento_estoque` FOR EACH ROW BEGIN
+  UPDATE estoque
+  SET quantidade = quantidade + NEW.quantidade
+  WHERE id = NEW.estoque_id;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `op_producao`
@@ -312,15 +320,14 @@ DROP TABLE IF EXISTS `op_producao`;
 CREATE TABLE `op_producao` (
   `id` int NOT NULL AUTO_INCREMENT,
   `item_pedido_id` int NOT NULL,
-  `status` enum('aberto','em_andamento','concluido') COLLATE utf8mb4_unicode_ci DEFAULT 'aberto',
+  `status` enum('aberto','em_andamento','concluido') DEFAULT 'aberto',
   `data_abertura` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `data_conclusao` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `item_pedido_id` (`item_pedido_id`),
-  KEY `idx_op_status` (`status`),
-  CONSTRAINT `op_producao_ibfk_1` FOREIGN KEY (`item_pedido_id`) REFERENCES `item_pedido` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `op_producao_ibfk_1` FOREIGN KEY (`item_pedido_id`) REFERENCES `item_pedido` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -329,7 +336,6 @@ CREATE TABLE `op_producao` (
 
 LOCK TABLES `op_producao` WRITE;
 /*!40000 ALTER TABLE `op_producao` DISABLE KEYS */;
-INSERT INTO `op_producao` VALUES (1,1,'aberto','2025-10-06 12:01:18',NULL,'2025-10-06 12:01:18'),(2,2,'em_andamento','2025-10-06 12:01:18',NULL,'2025-10-06 12:01:18'),(3,3,'concluido','2025-10-06 12:01:18',NULL,'2025-10-06 12:01:18');
 /*!40000 ALTER TABLE `op_producao` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -342,19 +348,17 @@ DROP TABLE IF EXISTS `pedido`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pedido` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `cliente_nome` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cliente_contato` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('criado','aprovado','em_producao','em_logistica','entregue','finalizado') COLLATE utf8mb4_unicode_ci DEFAULT 'criado',
+  `cliente_nome` varchar(255) NOT NULL,
+  `cliente_contato` varchar(255) DEFAULT NULL,
+  `status` enum('criado','aprovado','em_producao','em_logistica','entregue','finalizado') DEFAULT 'criado',
   `total` decimal(14,2) NOT NULL DEFAULT '0.00',
   `criado_por` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `criado_por` (`criado_por`),
-  KEY `idx_pedido_status` (`status`),
-  KEY `idx_pedido_created` (`created_at`),
-  CONSTRAINT `pedido_ibfk_1` FOREIGN KEY (`criado_por`) REFERENCES `usuario` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `pedido_ibfk_1` (`criado_por`),
+  CONSTRAINT `pedido_ibfk_1` FOREIGN KEY (`criado_por`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -363,6 +367,7 @@ CREATE TABLE `pedido` (
 
 LOCK TABLES `pedido` WRITE;
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
+INSERT INTO `pedido` VALUES (19,'Cliente ID 1',NULL,'criado',5250.00,1,'2025-11-18 20:11:04','2025-11-18 20:11:04'),(20,'henzo',NULL,'criado',750.00,1,'2025-11-18 20:23:08','2025-11-18 20:23:08');
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -375,15 +380,15 @@ DROP TABLE IF EXISTS `produto`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `produto` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `linha` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `formato` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `descricao` text COLLATE utf8mb4_unicode_ci,
-  `imagem_url` text COLLATE utf8mb4_unicode_ci,
+  `linha` varchar(255) NOT NULL,
+  `formato` varchar(255) NOT NULL,
+  `descricao` text,
+  `imagem_url` text,
   `ativo` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,6 +397,7 @@ CREATE TABLE `produto` (
 
 LOCK TABLES `produto` WRITE;
 /*!40000 ALTER TABLE `produto` DISABLE KEYS */;
+INSERT INTO `produto` VALUES (1,'espelho grande','redondo','espelho redondo grande','',1,'2025-11-17 18:44:00','2025-11-17 18:44:00'),(2,'espelho grande','quadrado','sim','',1,'2025-11-17 18:46:48','2025-11-17 18:46:48'),(3,'espelho grande','losango','é um espelho','',1,'2025-11-17 18:55:42','2025-11-17 18:55:42'),(4,'espelho grande','losango','é um espelho','',1,'2025-11-17 20:13:46','2025-11-17 20:13:46'),(5,'espelho prime','retangular','espelho safado','',1,'2025-11-18 16:52:47','2025-11-18 16:52:47'),(6,'espelho','retangular','sim','',1,'2025-11-18 19:12:55','2025-11-18 19:12:55'),(7,'espelho','redondo','sim','',1,'2025-11-18 19:29:52','2025-11-18 19:29:52');
 /*!40000 ALTER TABLE `produto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -405,14 +411,14 @@ DROP TABLE IF EXISTS `sessao`;
 CREATE TABLE `sessao` (
   `id` int NOT NULL AUTO_INCREMENT,
   `usuario_id` int NOT NULL,
-  `ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `ip` varchar(45) DEFAULT NULL,
+  `user_agent` text,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `expiracao` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_sessao_usuario` (`usuario_id`),
-  CONSTRAINT `sessao_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `sessao_ibfk_1` (`usuario_id`),
+  CONSTRAINT `sessao_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -421,7 +427,6 @@ CREATE TABLE `sessao` (
 
 LOCK TABLES `sessao` WRITE;
 /*!40000 ALTER TABLE `sessao` DISABLE KEYS */;
-INSERT INTO `sessao` VALUES (1,1,'192.168.0.10','Mozilla/5.0','2025-10-06 12:01:18','2025-10-07 12:01:18'),(2,2,'192.168.0.11','Chrome/120.0','2025-10-06 12:01:18','2025-10-08 12:01:18'),(3,3,'192.168.0.12','Edge/120.0','2025-10-06 12:01:18','2025-10-09 12:01:18');
 /*!40000 ALTER TABLE `sessao` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -435,14 +440,14 @@ DROP TABLE IF EXISTS `tracking`;
 CREATE TABLE `tracking` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pedido_id` int NOT NULL,
-  `evento` enum('roteirizado','em_rota','entregue') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `detalhes` text COLLATE utf8mb4_unicode_ci,
+  `evento` enum('roteirizado','em_rota','entregue') NOT NULL,
+  `detalhes` text,
   `data` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `foto_url` text COLLATE utf8mb4_unicode_ci,
+  `foto_url` text,
   PRIMARY KEY (`id`),
-  KEY `idx_tracking_pedido_data` (`pedido_id`,`data`),
-  CONSTRAINT `tracking_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `tracking_ibfk_1` (`pedido_id`),
+  CONSTRAINT `tracking_ibfk_1` FOREIGN KEY (`pedido_id`) REFERENCES `pedido` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -451,7 +456,6 @@ CREATE TABLE `tracking` (
 
 LOCK TABLES `tracking` WRITE;
 /*!40000 ALTER TABLE `tracking` DISABLE KEYS */;
-INSERT INTO `tracking` VALUES (1,1,'roteirizado','Pedido pronto para envio','2025-10-06 12:01:18',NULL),(2,2,'em_rota','Saiu para entrega','2025-10-06 12:01:18',NULL),(3,3,'entregue','Pedido entregue ao cliente','2025-10-06 12:01:18',NULL);
 /*!40000 ALTER TABLE `tracking` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -464,16 +468,16 @@ DROP TABLE IF EXISTS `usuario`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuario` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `senha_hash` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `perfil` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `senha_hash` text NOT NULL,
+  `perfil` varchar(50) DEFAULT NULL,
   `ativo` tinyint(1) NOT NULL DEFAULT '1',
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -482,7 +486,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'Usuário Padrão','eusougay123@gmail.com','scrypt:32768:8:1$muZ5bxIO1kVTWfxJ$2b41075f1402d3c8054aece4a2032eea6d7a70a10117b56178d3c3d9149ed590978c5e58f60b22f663d229f2b5133ab8a54bce0a54da5c0b130a7554ffde707f','cliente',1,'2025-10-07 16:31:37','2025-10-07 13:31:36'),(2,'Dorneles','dorneles@gmail.com','scrypt:32768:8:1$BgWxoazFTFi7VCh0$7b3138efe2ccf7f32f513ae2d7424add0f251e414f8e104e86a4cc354ade3ed84858923235e9113c3601711c0383f797333cf0a013f985fe2c36924926e5b704','cliente',1,'2025-10-07 19:37:46','2025-10-07 16:37:46');
+INSERT INTO `usuario` VALUES (1,'henzo','henzo@gmail.com','scrypt:32768:8:1$GiQ87ZPnM8u4bTlm$60b3c55ce49714d62c23b0f2ccc307da651b78f2d2261c856e018a05e55d9284bd49042ed19fb02314dd3e888e4a368bec6022081e9a5e11b7d72e623d113377','cliente',1,'2025-11-03 14:47:54','2025-11-03 11:47:53'),(2,'bruno','1@gmail.com','scrypt:32768:8:1$bIpTiikJSTb1yEqp$32c6d907918c5d5abea3d741462c45222776d46ee81a29db53e177cef8b4392c078b6ec71ecfbf7c9c3ec4438d87b01cc35de8f518ef1de5851676cc906fc8f1','cliente',1,'2025-11-03 15:05:33','2025-11-03 12:05:32'),(3,'bruno','bruno@gmail.com','scrypt:32768:8:1$fFnxaDxfYk8PvpjF$7dee3a7a08a38ccb765581d3e7f4df68fbdf252e913df34b572257fb70a7f23a7ebbde4204e2179c6b7f96623e9e45554adcff4814cb13712888102ed187826a','cliente',1,'2025-11-03 17:18:45','2025-11-03 14:18:45'),(4,'inouye','inouye@gmail.com','scrypt:32768:8:1$QXVyedfNNjurFYBg$c1c75c4f08c90139832d5af1bedab2998299f0097e688c0f0edea4b913db286f57944036568d0d118417e5c57ba6f1c5582c2ff650ef8d9039258698c7e6e1cd','cliente',1,'2025-11-18 21:35:55','2025-11-18 21:35:55');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -498,24 +502,20 @@ CREATE TABLE `variante` (
   `produto_id` int NOT NULL,
   `altura_cm` decimal(7,2) DEFAULT NULL,
   `largura_cm` decimal(7,2) DEFAULT NULL,
-  `cor` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cor` varchar(100) DEFAULT NULL,
   `led_direto` tinyint(1) NOT NULL DEFAULT '0',
   `led_indireto` tinyint(1) NOT NULL DEFAULT '0',
-  `moldura` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sku` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `moldura` varchar(100) DEFAULT NULL,
+  `sku` varchar(100) NOT NULL,
   `preco_base` decimal(12,2) NOT NULL,
   `ativo` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `sku` (`sku`),
-  KEY `idx_variante_produto` (`produto_id`),
-  KEY `idx_variante_busca` (`sku`,`cor`,`moldura`),
-  CONSTRAINT `variante_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produto` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `variante_chk_1` CHECK ((`altura_cm` > 0)),
-  CONSTRAINT `variante_chk_2` CHECK ((`largura_cm` > 0)),
-  CONSTRAINT `variante_chk_3` CHECK ((`preco_base` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `variante_ibfk_1` (`produto_id`),
+  CONSTRAINT `variante_ibfk_1` FOREIGN KEY (`produto_id`) REFERENCES `produto` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -524,6 +524,7 @@ CREATE TABLE `variante` (
 
 LOCK TABLES `variante` WRITE;
 /*!40000 ALTER TABLE `variante` DISABLE KEYS */;
+INSERT INTO `variante` VALUES (1,2,100.00,150.00,'preto',0,0,'sem','ESP-100-150-PRETO-SEM',150.00,0,'2025-11-17 18:46:48','2025-11-18 14:34:50'),(2,3,100.00,150.00,'branco',1,1,'aluminio','ESP-100-150-BRANCO-ALUM',200.00,0,'2025-11-17 18:55:42','2025-11-18 14:35:16'),(3,4,500.00,300.00,'amarelo',1,0,'metal','ESP-500-300-AMAREL-META',500.00,0,'2025-11-17 20:13:46','2025-11-18 14:35:00'),(4,5,600.00,300.00,'branco',1,1,'metal','ESP-600-300-BRANCO-META',155.00,0,'2025-11-18 16:52:47','2025-11-18 19:23:48'),(5,6,100.00,100.00,'preto',1,0,'metal','ESP-100-100-PRETO-META',150.00,0,'2025-11-18 19:12:55','2025-11-18 19:15:57'),(6,7,100.00,120.00,'preto',1,1,'metal','ESP-100-120-PRETO-META',150.00,0,'2025-11-18 19:29:52','2025-11-18 20:23:50');
 /*!40000 ALTER TABLE `variante` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -552,11 +553,11 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
--- Dumping events for database 'sistema'
+-- Dumping events for database 'sistema_tcc'
 --
 
 --
--- Dumping routines for database 'sistema'
+-- Dumping routines for database 'sistema_tcc'
 --
 
 --
@@ -572,7 +573,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `vw_catalogo` AS select `p`.`id` AS `produto_id`,`v`.`id` AS `variante_id`,`p`.`linha` AS `linha`,`p`.`formato` AS `formato`,`v`.`altura_cm` AS `altura_cm`,`v`.`largura_cm` AS `largura_cm`,`v`.`cor` AS `cor`,`v`.`led_direto` AS `led_direto`,`v`.`led_indireto` AS `led_indireto`,`v`.`moldura` AS `moldura`,`v`.`sku` AS `sku`,`v`.`preco_base` AS `preco_base`,`e`.`quantidade` AS `estoque` from ((`produto` `p` join `variante` `v` on((`v`.`produto_id` = `p`.`id`))) left join `estoque` `e` on((`e`.`variante_id` = `v`.`id`))) where ((`p`.`ativo` = true) and (`v`.`ativo` = true)) */;
+/*!50001 VIEW `vw_catalogo` AS select `p`.`id` AS `produto_id`,`v`.`id` AS `variante_id`,`p`.`linha` AS `linha`,`p`.`formato` AS `formato`,`v`.`altura_cm` AS `altura_cm`,`v`.`largura_cm` AS `largura_cm`,`v`.`cor` AS `cor`,`v`.`led_direto` AS `led_direto`,`v`.`led_indireto` AS `led_indireto`,`v`.`moldura` AS `moldura`,`v`.`sku` AS `sku`,`v`.`preco_base` AS `preco_base`,`e`.`quantidade` AS `estoque` from ((`produto` `p` join `variante` `v` on((`v`.`produto_id` = `p`.`id`))) left join `estoque` `e` on((`e`.`variante_id` = `v`.`id`))) where ((`p`.`ativo` = 1) and (`v`.`ativo` = 1)) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -586,4 +587,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-03  9:20:25
+-- Dump completed on 2025-11-24  8:36:11
