@@ -763,7 +763,8 @@ def deletar_insumo(id):
             "mensagem": "Insumo removido com sucesso",
             "custo_producao": float(variante.custo_producao),
             "preco_venda_sugerido": float(variante.preco_venda_sugerido)
-        })\n    except Exception as e:
+        })
+    except Exception as e:
         db.session.rollback()
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
