@@ -290,22 +290,13 @@
             <h2>Nova Venda</h2>
             <span class="subtitle">Preencha os dados para lançar o pedido.</span>
 
-            <!-- Search & Filter -->
-            <div class="search-container">
-                <input type="text" id="global-search" class="search-input" placeholder="Buscar cliente ou produto...">
-                <button type="button" class="btn-action btn-secondary" style="width: auto; margin-top:0;"
-                    onclick="abrirModalFiltro()">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
+
 
             <form id="faturamento-form">
                 <div class="form-group">
                     <label>Cliente</label>
+                    <input type="text" id="search-cliente" class="search-input" placeholder="Buscar cliente..."
+                        oninput="filtrarCliente()">
                     <select id="fatura-cliente" required>
                         <option value="">Carregando clientes...</option>
                     </select>
@@ -314,6 +305,8 @@
 
                 <div class="form-group">
                     <label>Produto (Variante)</label>
+                    <input type="text" id="search-produto" class="search-input" placeholder="Buscar produto..."
+                        oninput="filtrarProduto()">
                     <select id="fatura-produto" required>
                         <option value="">Carregando produtos...</option>
                     </select>
@@ -353,24 +346,7 @@
         </div>
     </main>
 
-    <!-- Modal de Filtros -->
-    <div id="filter-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Filtros Avançados</h3>
-                <button class="close-modal" onclick="fecharModalFiltro()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label>Filtrar Clientes por Nome</label>
-                <input type="text" id="filter-cliente-nome" placeholder="Digite parte do nome...">
-            </div>
-            <div class="form-group">
-                <label>Filtrar Produtos por Linha/Cor</label>
-                <input type="text" id="filter-produto-nome" placeholder="Digite linha, formato ou cor...">
-            </div>
-            <button class="btn-action" onclick="aplicarFiltros()">Aplicar Filtros</button>
-        </div>
-    </div>
+
 
     <script>
         let todosClientes = [];
@@ -542,53 +518,20 @@
 
         // --- Lógica de Busca e Filtros ---
 
-        // Busca Global (Input na tela principal)
-        document.getElementById("global-search").addEventListener("input", (e) => {
-            const termo = e.target.value.toLowerCase();
-
-            // Filtra clientes
+        function filtrarCliente() {
+            const termo = document.getElementById("search-cliente").value.toLowerCase();
             const clientesFiltrados = todosClientes.filter(c => c.nome.toLowerCase().includes(termo));
             popularClientes(clientesFiltrados);
+        }
 
-            // Filtra produtos
+        function filtrarProduto() {
+            const termo = document.getElementById("search-produto").value.toLowerCase();
             const produtosFiltrados = todosProdutos.filter(p =>
                 p.linha.toLowerCase().includes(termo) ||
                 p.formato.toLowerCase().includes(termo) ||
                 (p.cor && p.cor.toLowerCase().includes(termo))
             );
             popularProdutos(produtosFiltrados);
-        });
-
-        // Modal
-        function abrirModalFiltro() {
-            document.getElementById("filter-modal").style.display = "flex";
-        }
-        function fecharModalFiltro() {
-            document.getElementById("filter-modal").style.display = "none";
-        }
-        function aplicarFiltros() {
-            const termoCliente = document.getElementById("filter-cliente-nome").value.toLowerCase();
-            const termoProduto = document.getElementById("filter-produto-nome").value.toLowerCase();
-
-            const clientesFiltrados = todosClientes.filter(c => c.nome.toLowerCase().includes(termoCliente));
-            popularClientes(clientesFiltrados);
-
-            const produtosFiltrados = todosProdutos.filter(p =>
-                p.linha.toLowerCase().includes(termoProduto) ||
-                p.formato.toLowerCase().includes(termoProduto) ||
-                (p.cor && p.cor.toLowerCase().includes(termoProduto))
-            );
-            popularProdutos(produtosFiltrados);
-
-            fecharModalFiltro();
-        }
-
-        // Fechar modal ao clicar fora
-        window.onclick = function (event) {
-            const modal = document.getElementById("filter-modal");
-            if (event.target == modal) {
-                fecharModalFiltro();
-            }
         }
 
         // Iniciar
